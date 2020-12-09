@@ -1,7 +1,7 @@
 {
     "name": "dimkabelkov/rabbit-bus-bundle",
     "license": "proprietary",
-    "description": "dimkabelkov/doc-bundle",
+    "description": "dimkabelkov/rabbit-bus-bundle",
     "type": "symfony-bundle",
     "require": {
         "php": "^7.4",
