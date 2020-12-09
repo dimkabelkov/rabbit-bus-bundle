@@ -1,0 +1,43 @@
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registrations your services as commands, event subscribers, etc.
+
+    Dimkabelkov\RabbitBusBundle\Consumer\BusEventConsumer:
+        class: Dimkabelkov\RabbitBusBundle\Consumer\BusEventConsumer
+        tags:
+            - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
+
+    Dimkabelkov\RabbitBusBundle\Service\ProbeService:
+        class: Dimkabelkov\RabbitBusBundle\Service\ProbeService
+        arguments:
+            $cacheDir: '%kernel.cache_dir%'
+        tags:
+            - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
+
+    Dimkabelkov\RabbitBusBundle\Service\BusService:
+        class: Dimkabelkov\RabbitBusBundle\Service\BusService
+        arguments:
+            $multiple: '%rabbit_bus.multiple%'
+            $consumers: '%rabbit_bus.consumers%'
+            $exchangeMultipleName: '%rabbit_bus.exchange_multiple_name%'
+            $exchangeToClass: '%rabbit_bus.exchange_to_class%'
+        tags:
+            - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
+
+    Dimkabelkov\RabbitBusBundle\EventListener\BaseEventSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+
+    Dimkabelkov\RabbitBusBundle\Command\BusEmitEventCommand:
+        tags:
+            - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
+            - { name: console.command }
+
+    Dimkabelkov\RabbitBusBundle\Command\BusEmitProbeCommand:
+        tags:
+            - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
+            - { name: console.command }
+
+

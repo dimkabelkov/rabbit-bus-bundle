@@ -1,0 +1,23 @@
+{
+    "name": "dimkabelkov/rabbit-bus-bundle",
+    "license": "proprietary",
+    "description": "dimkabelkov/doc-bundle",
+    "type": "symfony-bundle",
+    "require": {
+        "php": "^7.4",
+        "ext-json": "*",
+        "psr/log": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dimkabelkov\\RabbitBusBundle\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dmitry Kiryukhin",
+            "email": "dimkabelkov@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
