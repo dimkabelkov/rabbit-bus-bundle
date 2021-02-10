@@ -40,14 +40,12 @@ rabbit_bus
 
 ```
 rabbit_bus
-    event_classes:
-        - YouProject/Event/ExamampleEvent
     events
         multiple: true
 ```
 
 ```
-use YouProject/Event/ExamampleEvent;
+use YouProject\Event\ExamampleEvent;
 
 // Any service
 
@@ -74,11 +72,11 @@ protected BusService $busService;
 ```
 rabbit_bus
     event_classes:
-        - YouProject/Event/ExamampleEvent
+        - YouProject\Event\ExamampleEvent
     events
         multiple: true
         consumers:
-            - !php/const YouProject/Event/ExamampleEvent::EXCHANGE
+            - !php/const YouProject\Event\ExamampleEvent::EXCHANGE
 ```
 
 Добавляем свой подписчик на событие
@@ -94,8 +92,9 @@ App\EventListener\EventBusSubscriber:
 
 namespace App\EventListener;
 
-use YouProject/Event/ExamampleEvent;
+use YouProject\Event\ExamampleEvent;
 use Psr\Log\LoggerAwareInterface;
+use Exception;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -116,7 +115,6 @@ class EventBusSubscriber implements EventSubscriberInterface, LoggerAwareInterfa
     /**
      * @param ExamampleEvent $event
      *
-     * @throws MappingException
      * @throws Exception
      */
     public function onFileEvent(ExamampleEvent $event)
