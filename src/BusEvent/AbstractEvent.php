@@ -6,7 +6,7 @@ namespace Dimkabelkov\RabbitBusBundle\BusEvent;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Contracts\EventDispatcher\Event;
 
-abstract class BaseEvent extends Event
+abstract class AbstractEvent extends Event
 {
     public const EXCHANGE = null;
 

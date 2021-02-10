@@ -4,7 +4,7 @@ namespace Dimkabelkov\RabbitBusBundle\Consumer;
 
 use Exception;
 use JMS\Serializer\SerializerInterface;
-use Dimkabelkov\RabbitBusBundle\BusEvent\BaseEvent;
+use Dimkabelkov\RabbitBusBundle\BusEvent\AbstractEvent;
 use Dimkabelkov\RabbitBusBundle\Exception\RetryException;
 use Dimkabelkov\RabbitBusBundle\Exception\UndefinedChannelException;
 use Dimkabelkov\RabbitBusBundle\Map;
@@ -78,13 +78,13 @@ class BusEventConsumer implements ConsumerInterface, LoggerAwareInterface
 
             $class = $this->busService->getEventByExchangeName($eventExchangeName);
             
-            /** @var BaseEvent $event */
-            $event = $this->serializer->fromArray($payload, $class);
+            /** @var AbstractEvent $abstractEvent */
+            $abstractEvent = $this->serializer->fromArray($payload, $class);
 
-            $event->setConsumerTag($consumerTag);
-            $event->setRoutingKey($eventRoutingKey);
+            $abstractEvent->setConsumerTag($consumerTag);
+            $abstractEvent->setRoutingKey($eventRoutingKey);
 
-            $this->eventDispatcher->dispatch($event);
+            $this->eventDispatcher->dispatch($abstractEvent);
 
             $status = true;
         } catch (UndefinedChannelException $ex) {

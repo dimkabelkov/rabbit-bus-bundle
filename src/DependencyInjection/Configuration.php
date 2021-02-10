@@ -19,9 +19,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('exchange_multiple_name')->defaultValue('rabbit-bus-events.multiple')->end()
-                ->arrayNode('exchange_to_class')
-                ->useAttributeAsKey('name')
+                ->arrayNode('event_classes')
                     ->scalarPrototype()
                     ->end()
                 ->end()

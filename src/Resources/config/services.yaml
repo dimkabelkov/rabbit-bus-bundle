@@ -21,8 +21,7 @@ services:
         arguments:
             $multiple: '%rabbit_bus.multiple%'
             $consumers: '%rabbit_bus.consumers%'
-            $exchangeMultipleName: '%rabbit_bus.exchange_multiple_name%'
-            $exchangeToClass: '%rabbit_bus.exchange_to_class%'
+            $eventClasses: '%rabbit_bus.event_classes%'
         tags:
             - { name: monolog.logger, channel: '%env(string:APP_NAME)%.rabbit-bus' }
 

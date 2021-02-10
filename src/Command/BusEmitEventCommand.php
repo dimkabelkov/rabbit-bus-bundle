@@ -3,7 +3,6 @@
 namespace Dimkabelkov\RabbitBusBundle\Command;
 
 use Exception;
-use Dimkabelkov\RabbitBusBundle\BusEvent\SampleEvent;
 use Dimkabelkov\RabbitBusBundle\Service\BusService;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -39,7 +38,7 @@ class BusEmitEventCommand extends Command implements LoggerAwareInterface
     protected function configure()
     {
         $this->setDescription('Emit bus event')
-             ->addArgument('exchange', InputArgument::OPTIONAL, 'Channel name', SampleEvent::EXCHANGE)
+             ->addArgument('exchange', InputArgument::OPTIONAL, 'Channel name')
              ->addArgument('name', InputArgument::OPTIONAL, 'Name', 'some-event')
              ->addArgument('id', InputArgument::OPTIONAL, 'Object id', 'some-id')
              ->addArgument('value', InputArgument::OPTIONAL, 'Value', 'some-value')

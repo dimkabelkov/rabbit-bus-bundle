@@ -3,7 +3,7 @@
 namespace Dimkabelkov\RabbitBusBundle\Command;
 
 use Exception;
-use Dimkabelkov\RabbitBusBundle\BusEvent\BaseEvent;
+use Dimkabelkov\RabbitBusBundle\BusEvent\AbstractEvent;
 use Dimkabelkov\RabbitBusBundle\Service\BusService;
 use Dimkabelkov\RabbitBusBundle\Service\ProbeService;
 use Psr\Log\LoggerAwareInterface;
@@ -45,7 +45,7 @@ class BusEmitProbeCommand extends Command implements LoggerAwareInterface
     protected function configure()
     {
         $this->setDescription('Emit bus probe')
-             ->addArgument('probe', InputArgument::REQUIRED, sprintf('Probe type [%s]', implode(', ', BaseEvent::PROBES)))
+             ->addArgument('probe', InputArgument::REQUIRED, sprintf('Probe type [%s]', implode(', ', AbstractEvent::PROBES)))
              ->addArgument('exchange', InputArgument::REQUIRED, sprintf('Exchange name [%s]', implode(', ', $this->busService->getConsumers())))
              ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'Timeout seconds', 15)
              ->addOption('frequency', 'f', InputOption::VALUE_REQUIRED, 'Check frequency seconds', 3);

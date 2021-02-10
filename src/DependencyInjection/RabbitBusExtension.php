@@ -2,7 +2,6 @@
 
 namespace Dimkabelkov\RabbitBusBundle\DependencyInjection;
 
-use Dimkabelkov\RabbitBusBundle\BusEvent\SampleEvent;
 use Dimkabelkov\RabbitBusBundle\Command\BusEmitEventCommand;
 use Dimkabelkov\RabbitBusBundle\Command\BusEmitProbeCommand;
 use Dimkabelkov\RabbitBusBundle\Consumer\BusEventConsumer;
@@ -17,7 +16,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
-class BusExtension extends Extension
+class RabbitBusExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -25,21 +24,25 @@ class BusExtension extends Extension
         $configuration = new Configuration();
 
         $config = $processor->processConfiguration($configuration, $configs);
-        $container->setParameter('rabbit_bus.multiple', !empty($config['events']['multiple']));
-        $container->setParameter('rabbit_bus.consumers', $config['events']['consumers']);
-        $container->setParameter('rabbit_bus.exchange_multiple_name', $config['exchange_multiple_name']);
-        $container->setParameter('rabbit_bus.exchange_to_class', !empty($config['exchange_to_class']) ? $config['exchange_to_class'] : []);
+
+        $multiple = !empty($config['events']['multiple']);
+        $consumers = array_unique($config['events']['consumers'] ?? []);
+        $producers = array_unique($config['events']['producers'] ?? []);
+
+        $container->setParameter('rabbit_bus.multiple', $multiple);
+        $container->setParameter('rabbit_bus.consumers', $consumers);
+        $container->setParameter('rabbit_bus.event_classes', !empty($config['event_classes']) ? $config['event_classes'] : []);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+
         $loader->load('services.yaml');
 
-        $consumers = $config['events']['consumers'] ?? [];
-        $consumers = array_unique($consumers);
+
         $routingKeys = $consumers;
         
-        if (!empty($config['events']['multiple'])) {
+        if ($multiple) {
             $consumers = [
-                BusService::EXCHANGE_MULTIPLE
+                BusService::EXCHANGE_MULTIPLE_NAME
             ];
         }
         
@@ -90,15 +93,13 @@ class BusExtension extends Extension
                 $callbackDefinition->addMethodCall('setDequeuer', array(new Reference($name)));
             }
         }
-
-        $producers = $config['events']['producers'] ?? [];
-        $producers = array_unique($producers);
-        if (!empty($config['events']['multiple'])) {
+        
+        if ($multiple) {
             $producers = [
-                BusService::EXCHANGE_MULTIPLE
+                BusService::EXCHANGE_MULTIPLE_NAME
             ];
         }
-
+        
         // producers
         foreach ($producers as $eventName) {
             $definition = new Definition('%old_sound_rabbit_mq.producer.class%');

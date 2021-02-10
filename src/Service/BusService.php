@@ -2,7 +2,7 @@
 
 namespace Dimkabelkov\RabbitBusBundle\Service;
 
-use Dimkabelkov\RabbitBusBundle\BusEvent\BaseEvent;
+use Dimkabelkov\RabbitBusBundle\BusEvent\AbstractEvent;
 use Dimkabelkov\RabbitBusBundle\Event\PublishEvent;
 use Dimkabelkov\RabbitBusBundle\Exception\UndefinedChannelException;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
@@ -16,6 +16,8 @@ use Psr\Log\LoggerAwareTrait;
  */
 class BusService implements LoggerAwareInterface
 {
+    public const EXCHANGE_MULTIPLE_NAME = 'rabbit-bus-events.multiple';
+
     use LoggerAwareTrait;
 
     /** @var EventDispatcherInterface */
@@ -24,11 +26,8 @@ class BusService implements LoggerAwareInterface
     /** @var Producer[] */
     private $producers = [];
 
-    /** @var string */
-    private string $exchangeMultipleName;
-
     /** @var array */
-    private array $exchangeToClass;
+    private array $eventClasses;
 
     /** @var bool */
     private bool $multiple = false;
@@ -38,50 +37,52 @@ class BusService implements LoggerAwareInterface
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
-        string $exchangeMultipleName,
-        array $exchangeToClass = [],
+        array $eventClasses = [],
         bool $multiple = false,
         array $consumers = []
     )
     {
         $this->eventDispatcher = $eventDispatcher;
-        $this->exchangeMultipleName = $exchangeMultipleName;
-        $this->exchangeToClass = $exchangeToClass;
+        $this->eventClasses = [];
 
-        $this->exchangeToClass[BusEvent\SampleEvent::EXCHANGE] = BusEvent\SampleEvent::class;
-
+        foreach ($eventClasses as $eventClass) {
+            if (in_array(AbstractEvent::class, class_parents($eventClass))) {
+                $this->eventClasses[$eventClass::EXCHANGE] = $eventClass;
+            }
+        }
+        
         $this->multiple = $multiple;
         $this->consumers = $consumers;
     }
 
     /**
-     * @param BaseEvent $busEvent
+     * @param AbstractEvent $abstractEvent
      */
-    public function dispatchBusEvent(BaseEvent $busEvent)
+    public function dispatchBusEvent(AbstractEvent $abstractEvent)
     {
-        $this->eventDispatcher->dispatch(new PublishEvent($busEvent));
+        $this->eventDispatcher->dispatch(new PublishEvent($abstractEvent));
     }
 
     /**
-     * @param BaseEvent $busEvent
+     * @param AbstractEvent $abstractEvent
      * @param string|null $routingKey
      */
-    public function publishBusEvent(BaseEvent $busEvent, ?string $routingKey = null)
+    public function publishBusEvent(AbstractEvent $abstractEvent, ?string $routingKey = null)
     {
-        $eventExchangeName = $busEvent::EXCHANGE;
+        $eventExchangeName = $abstractEvent::EXCHANGE;
 
         if ($this->multiple) {
-            $producer = $this->producers[$this->exchangeMultipleName];
+            $producer = $this->producers[self::EXCHANGE_MULTIPLE_NAME];
         } else {
             $producer = $this->producers[$eventExchangeName];
         }
 
-        $event = $busEvent->toArray();
+        $event = $abstractEvent->toArray();
         $event['exchange'] = $eventExchangeName;
 
         $this->logger->info('Push event to rabbit-bus', [
-            'event-id' => $busEvent->id,
-            'event-name' => $busEvent->name,
+            'event-id' => $abstractEvent->id,
+            'event-name' => $abstractEvent->name,
             'queue-exchange' => $eventExchangeName
         ]);
 
@@ -113,11 +114,11 @@ class BusService implements LoggerAwareInterface
      */
     public function getEventByExchangeName(string $exchange): string
     {
-        if (empty($this->exchangeToClass[$exchange])) {
+        if (empty($this->eventClasses[$exchange])) {
             throw new UndefinedChannelException($exchange);
         }
 
-        return $this->exchangeToClass[$exchange];
+        return $this->eventClasses[$exchange];
     }
 
     /**
@@ -126,11 +127,11 @@ class BusService implements LoggerAwareInterface
      * @param      $id
      * @param null $value
      *
-     * @return BaseEvent
+     * @return AbstractEvent
      *
      * @throws UndefinedChannelException
      */
-    public function createEvent($exchange, $name, $id, $value = null): BaseEvent
+    public function createEvent($exchange, $name, $id, $value = null): AbstractEvent
     {
         $class = $this->getEventByExchangeName($exchange);
         return new $class($name, $id, $value);
@@ -140,16 +141,16 @@ class BusService implements LoggerAwareInterface
      * @param $exchange
      * @param $probe
      *
-     * @return BaseEvent
+     * @return AbstractEvent
      * @throws UndefinedChannelException
      */
-    public function createProbe($exchange, $probe): BaseEvent
+    public function createProbe($exchange, $probe): AbstractEvent
     {
         $class = $this->getEventByExchangeName($exchange);
         
-        /** @var BaseEvent $event */
-        $event = new $class();
+        /** @var AbstractEvent $abstractEvent */
+        $abstractEvent = new $class();
 
-        return $event->makeProbe($probe);
+        return $abstractEvent->makeProbe($probe);
     }
 }
