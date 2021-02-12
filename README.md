@@ -3,24 +3,10 @@
 Add composer package `emag-tech-labs/rabbitmq-bundle` for `Symfony 5` or `php-amqplib/rabbitmq-bundle` for `Symfony 4`,
 and add any version `symfony/monolog-bundle`
 
+## Define env for app `A` nd `B`
+
 ```
 APP_NAME=app
-```
-
-## Define event class
-
-```
-<?php
-
-namespace YouProject\Event\ExamampleEvent;
-
-use Dimkabelkov\RabbitBusBundle\BusEvent\AbstractEvent;
-
-class ExamampleEvent extends AbstractEvent
-{
-    public const EXCHANGE = 'you-project.examample-event';
-}
-
 ```
 
 ## Configuration and run
@@ -36,13 +22,31 @@ rabbit_bus
         producers: #array events for executed in app, for multiple = false
 ```
 
-Config example for `multi: true` app A
+## Define event class for app `A` and `B` (define all event classes external repository, example: github.com/you-app/bus-events and include app `A` and `B`)
+
+```
+<?php
+
+namespace YouProject\Event\ExamampleEvent;
+
+use Dimkabelkov\RabbitBusBundle\BusEvent\AbstractEvent;
+
+class ExamampleEvent extends AbstractEvent
+{
+    public const EXCHANGE = 'you-project.examample-event';
+}
+
+```
+
+## Config example for `multi: true` app `A`
 
 ```
 rabbit_bus
     events
         multiple: true
 ```
+
+### Send event to rabbit
 
 ```
 use YouProject\Event\ExamampleEvent;
@@ -61,13 +65,13 @@ protected BusService $busService;
 // }
 ```
 
-Log
+### Log app `A`
 
 ```
 [2021-02-10T15:03:16.063755+03:00] app.rabbit-bus.INFO: Push event to rabbit-bus {"event-id":"event-id","event-name":"event-name","queue-exchange":"you-project.examample-event"} []
 ```
 
-Config example for `multi: true` app B
+## Config example for `multi: true` app `B`
 
 ```
 rabbit_bus
@@ -79,14 +83,7 @@ rabbit_bus
             - !php/const YouProject\Event\ExamampleEvent::EXCHANGE
 ```
 
-Add EventBusSubscriber in app B
-
-```
-App\EventListener\EventBusSubscriber:
-    tags:
-        - { name: kernel.event_subscriber }
-        - { name: monolog.logger, channel: '%env(string:APP_NAME)%.bus' }
-```
+### Define EventBusSubscriber app `B`
 
 ```
 <?php
@@ -125,17 +122,27 @@ class EventBusSubscriber implements EventSubscriberInterface, LoggerAwareInterfa
 }
 ```
 
-Run consumer
+### Add EventBusSubscriber in app `B`
+
+```
+App\EventListener\EventBusSubscriber:
+    tags:
+        - { name: kernel.event_subscriber }
+        - { name: monolog.logger, channel: '%env(string:APP_NAME)%.bus' }
+```
+
+
+
+### Run consumer
 
 ```
 ./bin/console rabbitmq:consumer rabbit-bus-events.multiple
 ```
 
-Log
+### Log
 
 ```
 [2021-02-10T15:03:16.076666+03:00] app.rabbit-bus.INFO: Run handle bus event {"event-id":"event-id","event-name":"event-name","queue-exchange":"ts-events.video.thumbnail-generate","queue-routing-key":"you-project.examample-event"} []
 [2021-02-10T15:03:16.076862+03:00] app.rabbit-bus.INFO: Check handle event {...} []
 [2021-02-10T15:03:16.076862+03:00] app.rabbit-bus.INFO: Complete queue task {"queue-exchange":"ts-events.video.thumbnail-generate"} []
 ```
-
