@@ -1,7 +1,7 @@
 # rabbit-bus-bundle
 
 Add composer package `emag-tech-labs/rabbitmq-bundle` for `Symfony 5` or `php-amqplib/rabbitmq-bundle` for `Symfony 4`,
-add add any version `symfony/monolog-bundle`
+and add any version `symfony/monolog-bundle`
 
 ```
 APP_NAME=app
