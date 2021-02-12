@@ -1,13 +1,13 @@
 # rabbit-bus-bundle
 
-Надо вручную добавить `emag-tech-labs/rabbitmq-bundle` для Symfony 5 или `php-amqplib/rabbitmq-bundle` для Symfony 4,
-и для любой версии добавить `symfony/monolog-bundle`
+Add composer package `emag-tech-labs/rabbitmq-bundle` for `Symfony 5` or `php-amqplib/rabbitmq-bundle` for `Symfony 4`,
+add add any version `symfony/monolog-bundle`
 
 ```
 APP_NAME=app
 ```
 
-## Описание класса события
+## Define event class
 
 ```
 <?php
@@ -23,20 +23,20 @@ class ExamampleEvent extends AbstractEvent
 
 ```
 
-## Конфигурация и запуск
+## Configuration and run
 
-Описания общего конфига
+Config description
 
 ```
 rabbit_bus
-    event_classes: array #массив всех событий которые будут использоваться в сервисе
+    event_classes: #array all events in app
     events
-        multiple: bool #режим работе, true - 1 консьюмера на все события, false - каждый для своего 
-        consumers: array #массив очередей которые будут обрабатываться данным сервисом, заполняетя вне зависимости от поля multiple 
-        producers: array #массив продюсеров которые будут использваться в случает multiple = false\ 
+        multiple: #bool true - 1 consumer for all events, false - consumer for event 
+        consumers: #array events for executed in app, defined for any field multiple
+        producers: #array events for executed in app, for multiple = false
 ```
 
-Пример конфига и кода для работы в режиме `multi: true` для сервиса с продюсером
+Config example for `multi: true` app A
 
 ```
 rabbit_bus
@@ -61,13 +61,13 @@ protected BusService $busService;
 // }
 ```
 
-Вывод в лог
+Log
 
 ```
 [2021-02-10T15:03:16.063755+03:00] app.rabbit-bus.INFO: Push event to rabbit-bus {"event-id":"event-id","event-name":"event-name","queue-exchange":"you-project.examample-event"} []
 ```
 
-Пример для работы в режиме `multi: true` для сервиса с консьюмером
+Config example for `multi: true` app B
 
 ```
 rabbit_bus
@@ -79,7 +79,8 @@ rabbit_bus
             - !php/const YouProject\Event\ExamampleEvent::EXCHANGE
 ```
 
-Добавляем свой подписчик на событие
+Add EventBusSubscriber in app B
+
 ```
 App\EventListener\EventBusSubscriber:
     tags:
@@ -117,7 +118,7 @@ class EventBusSubscriber implements EventSubscriberInterface, LoggerAwareInterfa
      *
      * @throws Exception
      */
-    public function onFileEvent(ExamampleEvent $event)
+    public function onExamampleEvent(ExamampleEvent $event)
     {
         $this->logger->info('Check handle event', $event->toArray());
     }
@@ -130,7 +131,7 @@ Run consumer
 ./bin/console rabbitmq:consumer rabbit-bus-events.multiple
 ```
 
-Вывод в лог
+Log
 
 ```
 [2021-02-10T15:03:16.076666+03:00] app.rabbit-bus.INFO: Run handle bus event {"event-id":"event-id","event-name":"event-name","queue-exchange":"ts-events.video.thumbnail-generate","queue-routing-key":"you-project.examample-event"} []
