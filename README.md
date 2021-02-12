@@ -124,6 +124,12 @@ class EventBusSubscriber implements EventSubscriberInterface, LoggerAwareInterfa
 }
 ```
 
+Run consumer
+
+```
+./bin/console rabbitmq:consumer rabbit-bus-events.multiple
+```
+
 Вывод в лог
 
 ```
