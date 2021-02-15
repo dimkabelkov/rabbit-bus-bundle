@@ -1,5 +1,17 @@
 # rabbit-bus-bundle
 
+Multiple events listener fo SOA
+
+```
+Service A -> enevt -> rabbit-mq
+
+
+rabbit-mq -> event -> Service B
+rabbit-mq -> event -> Service C
+rabbit-mq -> event -> Service ...
+```
+
+
 Add composer package `emag-tech-labs/rabbitmq-bundle` for `Symfony 5` or `php-amqplib/rabbitmq-bundle` for `Symfony 4`,
 and add any version `symfony/monolog-bundle`
 
@@ -133,13 +145,13 @@ App\EventListener\EventBusSubscriber:
 
 
 
-### Run consumer
+### Run consumer app `B`
 
 ```
 ./bin/console rabbitmq:consumer rabbit-bus-events.multiple
 ```
 
-### Log
+### Log app `B`
 
 ```
 [2021-02-10T15:03:16.076666+03:00] app.rabbit-bus.INFO: Run handle bus event {"event-id":"event-id","event-name":"event-name","queue-exchange":"ts-events.video.thumbnail-generate","queue-routing-key":"you-project.examample-event"} []
