@@ -34,6 +34,20 @@ rabbit_bus
         producers: #array events for executed in app, for multiple = false
 ```
 
+Add monolog channel
+
+```
+monolog:
+    handlers:
+        main:
+            ...
+            channels:
+                - ...
+                - '%env(string:APP_NAME)%.rabbit-bus'
+                - ...
+            ...
+```
+
 ## Define event class for app `A` and `B` (define all event classes external repository, example: github.com/you-app/bus-events and include app `A` and `B`)
 
 ```
